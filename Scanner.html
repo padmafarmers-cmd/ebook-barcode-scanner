@@ -1,1 +1,797 @@
-https://github.com/padmafarmers-cmd/ebook-barcode-scanner
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>Scanner Barcode • E-Book Expired System</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 600px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2563eb;
+      font-size: 22px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      margin-top: 3px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .close-btn {
+      border: 0;
+      background: #1e293b;
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .scanner-card {
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #020617;
+      min-height: 280px;
+    }
+
+    #reader video {
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .status.success {
+      background: #064e3b;
+      color: #a7f3d0;
+    }
+
+    .status.error {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    .manual {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #111827;
+      border: 1px solid #334155;
+    }
+
+    .manual-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .manual-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .manual input {
+      flex: 1;
+      min-width: 0;
+      height: 46px;
+      padding: 0 13px;
+      border: 1px solid #475569;
+      border-radius: 12px;
+      background: #020617;
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .manual input:focus {
+      border-color: #3b82f6;
+    }
+
+    .manual button {
+      height: 46px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hint {
+      margin-top: 10px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 6, 23, .85);
+      z-index: 999;
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .loading-box {
+      text-align: center;
+      padding: 25px;
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 14px;
+      border: 4px solid #334155;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      .app {
+        padding: 12px;
+      }
+
+      .scanner-card {
+        padding: 10px;
+      }
+
+      .brand-title {
+        font-size: 16px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+
+    <div class="brand">
+
+      <div class="brand-icon">
+        📷
+      </div>
+
+      <div>
+
+        <div class="brand-title">
+          Scanner Barcode
+        </div>
+
+        <div class="brand-subtitle">
+          E-Book Expired System
+        </div>
+
+      </div>
+
+    </div>
+
+    <button
+      class="close-btn"
+      type="button"
+      onclick="closeScanner()"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <div class="scanner-card">
+
+    <div id="reader"></div>
+
+    <div
+      id="scannerStatus"
+      class="status"
+    >
+      Memulai kamera...
+    </div>
+
+  </div>
+
+
+  <div class="manual">
+
+    <div class="manual-title">
+      Input Barcode Manual
+    </div>
+
+    <div class="manual-row">
+
+      <input
+        id="manualBarcode"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="Masukkan barcode"
+      >
+
+      <button
+        type="button"
+        onclick="sendManualBarcode()"
+      >
+        Gunakan
+      </button>
+
+    </div>
+
+    <div class="hint">
+      Jika kamera tidak dapat digunakan,
+      masukkan barcode secara manual.
+    </div>
+
+  </div>
+
+</div>
+
+
+<div
+  id="loading"
+  class="loading"
+>
+
+  <div class="loading-box">
+
+    <div class="spinner"></div>
+
+    <div>
+      Mengirim barcode...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  let scanner = null;
+
+  let scannerStarted = false;
+
+  let barcodeSent = false;
+
+
+  function setStatus(message, type) {
+
+    const el =
+      document.getElementById('scannerStatus');
+
+    el.textContent = message;
+
+    el.className = 'status';
+
+    if (type) {
+      el.classList.add(type);
+    }
+
+  }
+
+
+  function showLoading(show) {
+
+    const el =
+      document.getElementById('loading');
+
+    if (show) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+
+  }
+
+
+  function normalizeBarcode(value) {
+
+    return String(value || '')
+      .trim()
+      .replace(/\s+/g, '');
+
+  }
+
+
+  function sendBarcode(barcode) {
+
+    if (barcodeSent) {
+      return;
+    }
+
+    barcode =
+      normalizeBarcode(barcode);
+
+    if (!barcode) {
+      return;
+    }
+
+    barcodeSent = true;
+
+    showLoading(true);
+
+    setStatus(
+      'Barcode berhasil dibaca: ' + barcode,
+      'success'
+    );
+
+
+    try {
+
+      if (
+        window.opener &&
+        !window.opener.closed
+      ) {
+
+        window.opener.postMessage(
+          {
+            type: 'EBOOK_BARCODE_SCAN',
+            barcode: barcode
+          },
+          '*'
+        );
+
+
+        setTimeout(
+          function() {
+
+            window.close();
+
+          },
+          500
+        );
+
+        return;
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+
+    showLoading(false);
+
+    setStatus(
+      'Barcode terbaca: ' +
+      barcode +
+      '. Silakan kembali ke aplikasi.',
+      'success'
+    );
+
+  }
+
+
+  function sendManualBarcode() {
+
+    const input =
+      document.getElementById(
+        'manualBarcode'
+      );
+
+    const barcode =
+      normalizeBarcode(input.value);
+
+    if (!barcode) {
+
+      setStatus(
+        'Silakan masukkan barcode terlebih dahulu.',
+        'error'
+      );
+
+      input.focus();
+
+      return;
+
+    }
+
+    sendBarcode(barcode);
+
+  }
+
+
+  async function getPreferredCamera() {
+
+    const cameras =
+      await Html5Qrcode.getCameras();
+
+    if (
+      !cameras ||
+      cameras.length === 0
+    ) {
+
+      throw new Error(
+        'Kamera tidak ditemukan pada perangkat.'
+      );
+
+    }
+
+
+    const preferred =
+      cameras.find(
+        function(camera) {
+
+          const label =
+            String(
+              camera.label || ''
+            ).toLowerCase();
+
+          return (
+            label.includes('back') ||
+            label.includes('rear') ||
+            label.includes('environment') ||
+            label.includes('belakang') ||
+            label.includes('main')
+          );
+
+        }
+      );
+
+
+    return preferred || cameras[0];
+
+  }
+
+
+  function getQrBoxSize() {
+
+    const reader =
+      document.getElementById('reader');
+
+    const width =
+      reader.clientWidth || 320;
+
+
+    const boxWidth =
+      Math.min(
+        Math.max(
+          Math.floor(width * 0.82),
+          240
+        ),
+        500
+      );
+
+
+    const boxHeight =
+      Math.min(
+        Math.max(
+          Math.floor(boxWidth * 0.42),
+          90
+        ),
+        180
+      );
+
+
+    return {
+      width: boxWidth,
+      height: boxHeight
+    };
+
+  }
+
+
+  async function startScanner() {
+
+    try {
+
+      if (!window.isSecureContext) {
+
+        throw new Error(
+          'Scanner harus dibuka melalui HTTPS.'
+        );
+
+      }
+
+
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+
+        throw new Error(
+          'Browser tidak mendukung akses kamera.'
+        );
+
+      }
+
+
+      setStatus(
+        'Meminta akses kamera...',
+        null
+      );
+
+
+      const camera =
+        await getPreferredCamera();
+
+
+      scanner =
+        new Html5Qrcode('reader');
+
+
+      const qrbox =
+        getQrBoxSize();
+
+
+      await scanner.start(
+
+        camera.id,
+
+        {
+          fps: 12,
+
+          qrbox: qrbox,
+
+          aspectRatio: 1.7777778,
+
+          disableFlip: false
+        },
+
+        function(decodedText) {
+
+          if (barcodeSent) {
+            return;
+          }
+
+          sendBarcode(decodedText);
+
+        },
+
+        function(errorMessage) {
+
+          /*
+           * Error decode normal tidak ditampilkan.
+           */
+
+        }
+
+      );
+
+
+      scannerStarted = true;
+
+
+      setStatus(
+        'Arahkan kamera ke barcode produk.',
+        null
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Scanner error:',
+        error
+      );
+
+
+      let message =
+        error &&
+        error.message
+          ? error.message
+          : String(error);
+
+
+      if (
+        message.includes('Permission') ||
+        message.includes('NotAllowed') ||
+        message.includes('permission')
+      ) {
+
+        message =
+          'Akses kamera ditolak. ' +
+          'Pastikan izin kamera browser sudah diizinkan.';
+
+      } else if (
+        message.includes('NotReadable') ||
+        message.includes('Could not start')
+      ) {
+
+        message =
+          'Kamera sedang digunakan aplikasi lain. ' +
+          'Tutup aplikasi yang menggunakan kamera lalu coba lagi.';
+
+      }
+
+
+      setStatus(
+        message,
+        'error'
+      );
+
+    }
+
+  }
+
+
+  async function stopScanner() {
+
+    try {
+
+      if (scanner) {
+
+        if (scannerStarted) {
+
+          await scanner.stop();
+
+        }
+
+        await scanner.clear();
+
+      }
+
+    } catch (error) {
+
+      console.warn(
+        'Scanner stop:',
+        error
+      );
+
+    }
+
+
+    scanner = null;
+
+    scannerStarted = false;
+
+  }
+
+
+  async function closeScanner() {
+
+    await stopScanner();
+
+    try {
+
+      window.close();
+
+    } catch (error) {
+
+      console.warn(error);
+
+    }
+
+  }
+
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    function() {
+
+      startScanner();
+
+    }
+  );
+
+
+  window.addEventListener(
+    'beforeunload',
+    function() {
+
+      stopScanner();
+
+    }
+  );
+
+
+  document
+    .getElementById('manualBarcode')
+    .addEventListener(
+      'keydown',
+      function(event) {
+
+        if (event.key === 'Enter') {
+
+          event.preventDefault();
+
+          sendManualBarcode();
+
+        }
+
+      }
+    );
+
+</script>
+
+</body>
+</html>
