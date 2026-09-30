@@ -1,1 +1,557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Scanner Barcode • E BOOK EXPIRED DF PADMA</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    :root{--bg:#f1f5f9;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;--primary:#2563eb;--danger:#dc2626;--ok:#059669}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0f172a 0,#1e293b 28%,var(--bg) 28%);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh}
+    .app{width:min(100%,560px);margin:auto;padding:18px 14px 30px}
+    .top{display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:14px}
+    .brand{display:flex;gap:11px;align-items:center}.brand-icon{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:21px}
+    .title{font-weight:800;font-size:16px}.sub{font-size:11px;opacity:.75;margin-top:2px}
+    .close{border:0;background:rgba(255,255,255,.12);color:#fff;width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}
+    .card{background:var(--card);border:1px solid rgba(226,232,240,.9);border-radius:22px;box-shadow:0 16px 40px rgba(15,23,42,.12);padding:14px}
+    .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:3px 2px 12px}
+    .dot{width:9px;height:9px;border-radius:50%;background:#94a3b8}.dot.active{background:var(--ok);box-shadow:0 0 0 5px rgba(5,150,105,.12)}.dot.error{background:var(--danger)}
+    #reader{width:100%;min-height:300px;border-radius:17px;overflow:hidden;background:#0f172a;position:relative}
+    #reader video{width:100%!important;height:auto!important;object-fit:cover}
+    .placeholder{min-height:300px;display:grid;place-items:center;text-align:center;color:#cbd5e1;padding:30px}
+    .hint{font-size:12px;color:var(--muted);line-height:1.5;padding:11px 2px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    button{font:inherit}.btn{border:0;border-radius:13px;padding:12px 14px;font-weight:750;cursor:pointer}.primary{background:var(--primary);color:#fff}.secondary{background:#e2e8f0;color:#0f172a}.danger{background:#fee2e2;color:#991b1b}.btn:disabled{opacity:.5;cursor:not-allowed}
+    .message{margin-top:10px;min-height:20px;font-size:12px;line-height:1.5;color:var(--muted)}
+    .result{display:none;margin-top:12px;border:1px solid #bbf7d0;background:#f0fdf4;border-radius:15px;padding:12px}.result.show{display:block}
+    .result-label{font-size:10px;font-weight:800;color:#047857;letter-spacing:.08em}.result-code{font-size:22px;font-weight:850;word-break:break-all;margin:5px 0 10px}
+    .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .manual{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}.label{font-size:11px;font-weight:750;color:var(--muted);display:block;margin-bottom:6px}
+    .manual-row{display:grid;grid-template-columns:1fr auto;gap:8px}.manual input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;outline:none}.manual input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .permission{display:none;margin-top:10px;padding:11px;border-radius:13px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;line-height:1.5}.permission.show{display:block}
+    .footer{text-align:center;color:#94a3b8;font-size:10px;padding-top:14px}
+    @media(min-width:600px){.app{padding-top:28px}#reader,.placeholder{min-height:340px}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <div class="top">
+    <div class="brand">
+      <div class="brand-icon">▦</div>
+      <div>
+        <div class="title">Scanner Barcode</div>
+        <div class="sub">E BOOK EXPIRED DF PADMA</div>
+      </div>
+    </div>
+    <button class="close" type="button" onclick="closeScanner()" aria-label="Tutup">✕</button>
+  </div>
 
+  <section class="card">
+    <div class="status">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Siap digunakan</span>
+    </div>
+
+    <div id="reader">
+      <div class="placeholder" id="placeholder">
+        <div>
+          <div style="font-size:38px">📷</div>
+          <div style="font-weight:800;margin-top:8px">Kamera belum dimulai</div>
+          <div style="font-size:12px;margin-top:5px">Tekan “Mulai Kamera”</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">
+      Arahkan kamera belakang ke barcode. Jaga barcode tetap jelas dan memenuhi area scan.
+    </div>
+
+    <div class="actions">
+      <button id="startBtn" class="btn primary" type="button" onclick="startCamera()">
+        📷 Mulai Kamera
+      </button>
+
+      <button id="stopBtn" class="btn danger" type="button" onclick="stopCamera()" disabled>
+        ■ Stop
+      </button>
+    </div>
+
+    <div id="permissionBox" class="permission">
+      Kamera tidak dapat dibuka. Pastikan scanner dibuka melalui HTTPS, browser mengizinkan kamera, dan tidak ada aplikasi lain yang sedang mengunci kamera.
+    </div>
+
+    <div id="resultBox" class="result">
+      <div class="result-label">BARCODE TERBACA</div>
+      <div id="resultCode" class="result-code">-</div>
+
+      <div class="result-actions">
+        <button class="btn primary" type="button" onclick="useResult()">
+          ✓ Gunakan
+        </button>
+
+        <button class="btn secondary" type="button" onclick="scanAgain()">
+          ↻ Scan Lagi
+        </button>
+      </div>
+    </div>
+
+    <div class="manual">
+      <label class="label" for="manualBarcode">
+        Atau masukkan barcode manual
+      </label>
+
+      <div class="manual-row">
+        <input
+          id="manualBarcode"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Ketik barcode..."
+        >
+
+        <button class="btn primary" type="button" onclick="useManualBarcode()">
+          OK
+        </button>
+      </div>
+    </div>
+
+    <div id="message" class="message"></div>
+  </section>
+
+  <div class="footer">
+    Scanner standalone • kamera berjalan di halaman HTTPS terpisah
+  </div>
+</main>
+
+<script>
+'use strict';
+
+let scanner = null;
+let scannerRunning = false;
+let lastScannedCode = '';
+let closing = false;
+
+/*
+  Index.html akan membuka scanner dengan:
+  Scanner.html?targetOrigin=<origin-apps-script>
+*/
+const params = new URLSearchParams(location.search);
+const targetOrigin = params.get('targetOrigin') || '';
+
+const SUPPORTED_FORMATS = [
+  Html5QrcodeSupportedFormats.CODE_128,
+  Html5QrcodeSupportedFormats.CODE_39,
+  Html5QrcodeSupportedFormats.CODE_93,
+  Html5QrcodeSupportedFormats.CODABAR,
+  Html5QrcodeSupportedFormats.EAN_13,
+  Html5QrcodeSupportedFormats.EAN_8,
+  Html5QrcodeSupportedFormats.ITF,
+  Html5QrcodeSupportedFormats.UPC_A,
+  Html5QrcodeSupportedFormats.UPC_E,
+  Html5QrcodeSupportedFormats.QR_CODE
+];
+
+const config = {
+  fps: 10,
+
+  qrbox: function(viewfinderWidth, viewfinderHeight) {
+    const m = Math.min(viewfinderWidth, viewfinderHeight);
+
+    const w = Math.max(
+      180,
+      Math.min(320, Math.floor(m * 0.78))
+    );
+
+    return {
+      width: w,
+      height: Math.max(90, Math.floor(w * 0.46))
+    };
+  },
+
+  aspectRatio: 1.7777778,
+  disableFlip: false
+};
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function setStatus(text, type) {
+  $('statusText').textContent = text;
+
+  $('statusDot').className =
+    'dot' +
+    (
+      type === 'active'
+        ? ' active'
+        : type === 'error'
+          ? ' error'
+          : ''
+    );
+}
+
+function setMessage(text) {
+  $('message').textContent = text || '';
+}
+
+function normalizeBarcode(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, '');
+}
+
+function validBarcode(code) {
+  return code.length >= 3 && code.length <= 128;
+}
+
+function showResult(code) {
+  lastScannedCode = normalizeBarcode(code);
+
+  $('resultCode').textContent = lastScannedCode;
+  $('resultBox').classList.add('show');
+
+  setMessage(
+    'Barcode berhasil dibaca. Tekan “Gunakan” untuk mengirim ke aplikasi.'
+  );
+}
+
+function hideResult() {
+  $('resultBox').classList.remove('show');
+}
+
+async function startCamera() {
+  if (scannerRunning) return;
+
+  if (!window.isSecureContext && location.hostname !== 'localhost') {
+    showError('Scanner wajib dibuka melalui HTTPS.');
+    return;
+  }
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+    showError('Browser tidak mendukung akses kamera.');
+    return;
+  }
+
+  hideResult();
+
+  $('permissionBox').classList.remove('show');
+  $('startBtn').disabled = true;
+  $('stopBtn').disabled = false;
+  $('placeholder').style.display = 'none';
+
+  setStatus('Membuka kamera...', 'active');
+
+  setMessage(
+    'Mohon izinkan kamera jika browser menampilkan permintaan izin.'
+  );
+
+  try {
+    if (!scanner) {
+      scanner = new Html5Qrcode('reader', {
+        formatsToSupport: SUPPORTED_FORMATS,
+        useBarCodeDetectorIfSupported: true
+      });
+    }
+
+    await scanner.start(
+      {
+        facingMode: {
+          ideal: 'environment'
+        }
+      },
+
+      config,
+
+      function(decodedText) {
+        const code = normalizeBarcode(decodedText);
+
+        if (!validBarcode(code) || closing) return;
+
+        showResult(code);
+
+        stopCamera().finally(function() {
+          setStatus('Barcode terbaca', 'active');
+        });
+      },
+
+      function() {}
+    );
+
+    scannerRunning = true;
+
+    $('startBtn').disabled = true;
+    $('stopBtn').disabled = false;
+
+    setStatus(
+      'Kamera aktif • arahkan ke barcode',
+      'active'
+    );
+
+    setMessage(
+      'Scanner siap. Tunggu sampai barcode terbaca.'
+    );
+
+  } catch (err) {
+
+    scannerRunning = false;
+
+    $('startBtn').disabled = false;
+    $('stopBtn').disabled = true;
+    $('placeholder').style.display = 'grid';
+
+    showError(cameraErrorMessage(err));
+  }
+}
+
+async function stopCamera() {
+
+  if (!scanner) {
+
+    scannerRunning = false;
+
+    $('startBtn').disabled = false;
+    $('stopBtn').disabled = true;
+    $('placeholder').style.display = 'grid';
+
+    return;
+  }
+
+  try {
+
+    if (scannerRunning) {
+      await scanner.stop();
+    }
+
+  } catch (e) {
+
+    // Cleanup tetap dilanjutkan.
+
+  } finally {
+
+    scannerRunning = false;
+
+    $('startBtn').disabled = false;
+    $('stopBtn').disabled = true;
+    $('placeholder').style.display = 'grid';
+
+    setStatus('Kamera berhenti', '');
+  }
+}
+
+function cameraErrorMessage(err) {
+
+  const name =
+    err && err.name
+      ? String(err.name)
+      : '';
+
+  if (
+    name === 'NotAllowedError' ||
+    name === 'PermissionDeniedError'
+  ) {
+
+    return 'Akses kamera ditolak. Izinkan kamera untuk situs scanner ini lalu tekan “Mulai Kamera” lagi.';
+  }
+
+  if (
+    name === 'NotFoundError' ||
+    name === 'DevicesNotFoundError'
+  ) {
+
+    return 'Kamera tidak ditemukan pada perangkat ini.';
+  }
+
+  if (
+    name === 'NotReadableError' ||
+    name === 'TrackStartError'
+  ) {
+
+    return 'Kamera sedang digunakan aplikasi lain atau tidak dapat dibaca.';
+  }
+
+  if (name === 'OverconstrainedError') {
+
+    return 'Kamera belakang tidak tersedia. Coba gunakan kamera lain pada perangkat.';
+  }
+
+  return 'Gagal membuka kamera. Silakan cek HTTPS dan izin kamera, lalu coba lagi.';
+}
+
+function showError(message) {
+
+  $('permissionBox').textContent = message;
+  $('permissionBox').classList.add('show');
+
+  setStatus(
+    'Kamera gagal dibuka',
+    'error'
+  );
+
+  setMessage(message);
+}
+
+function scanAgain() {
+
+  hideResult();
+
+  lastScannedCode = '';
+
+  setMessage('Siap scan lagi.');
+
+  startCamera();
+}
+
+function useManualBarcode() {
+
+  const code =
+    normalizeBarcode(
+      $('manualBarcode').value
+    );
+
+  if (!validBarcode(code)) {
+
+    setMessage(
+      'Barcode minimal 3 karakter.'
+    );
+
+    $('manualBarcode').focus();
+
+    return;
+  }
+
+  showResult(code);
+
+  useResult();
+}
+
+function useResult() {
+
+  const code =
+    normalizeBarcode(
+      lastScannedCode ||
+      $('resultCode').textContent
+    );
+
+  if (!validBarcode(code)) return;
+
+  if (
+    !window.opener ||
+    window.opener.closed
+  ) {
+
+    setMessage(
+      'Jendela aplikasi utama sudah tertutup. Tutup scanner lalu buka kembali dari aplikasi.'
+    );
+
+    return;
+  }
+
+  if (
+    !targetOrigin ||
+    targetOrigin === 'null'
+  ) {
+
+    setMessage(
+      'Target aplikasi tidak valid. Buka scanner dari tombol Scan di aplikasi utama.'
+    );
+
+    return;
+  }
+
+  closing = true;
+
+  stopCamera().finally(function() {
+
+    try {
+
+      window.opener.postMessage(
+        {
+          type: 'EBOOK_BARCODE_SCAN',
+          barcode: code
+        },
+        targetOrigin
+      );
+
+      setStatus(
+        'Barcode dikirim',
+        'active'
+      );
+
+      setMessage(
+        'Barcode berhasil dikirim ke aplikasi.'
+      );
+
+      setTimeout(function() {
+        window.close();
+      }, 250);
+
+    } catch (e) {
+
+      closing = false;
+
+      setMessage(
+        'Gagal mengirim barcode ke aplikasi.'
+      );
+    }
+  });
+}
+
+function closeScanner() {
+
+  closing = true;
+
+  stopCamera().finally(function() {
+
+    try {
+      window.close();
+    } catch(e) {}
+
+    setTimeout(function() {
+
+      if (!window.closed) {
+
+        setMessage(
+          'Scanner dihentikan. Anda dapat menutup tab ini.'
+        );
+
+        closing = false;
+      }
+
+    }, 250);
+  });
+}
+
+window.addEventListener(
+  'beforeunload',
+  function() {
+
+    if (scanner && scannerRunning) {
+
+      try {
+        scanner.stop();
+      } catch(e) {}
+    }
+  }
+);
+
+$('manualBarcode').addEventListener(
+  'keydown',
+  function(e) {
+
+    if (e.key === 'Enter') {
+
+      e.preventDefault();
+
+      useManualBarcode();
+    }
+  }
+);
+</script>
+
+</body>
+</html>
